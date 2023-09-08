@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bulk Email with QR Code</title>
+  </head>
+  <style>
+    table {
+      border: 1px solid black;
+      text-align: center;
+    }
+    td {
+      border: 1px solid black;
+      text-align: center;
+      padding: 5px;
+    }
+    th {
+      border: 1px solid black;
+      text-align: center;
+      padding: 5px;
+    }
+  </style>
+  <body>
+    <center>
+      <h1>Bulk Email with QR Code</h1>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="csvFile" accept=".csv" />
+        <button type="submit">Upload CSV</button>
+      </form>
+
+      <button id="sendBulkEmail">Send Bulk Email</button>
+
+      <div id="userList">
+        <!-- User data will be displayed here -->
+      </div>
+    </center>
+  </body>
+  <script>
+    const uploadForm = document.getElementById("uploadForm");
+    const sendBulkEmailButton = document.getElementById("sendBulkEmail");
+    const userList = document.getElementById("userList");
+
+    uploadForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const formData = new FormData(uploadForm);
+
+      fetch("http://localhost:3000/upload-csv", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          alert(data.message);
+          fetchUsers(); // Refresh user list after CSV upload
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred during CSV upload");
+        });
+    });
+
+    sendBulkEmailButton.addEventListener("click", () => {
+      fetch("http://localhost:3000/send-bulk-email", {
+        method: "POST",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          alert(data.message);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while sending bulk emails");
+        });
+    });
+
+    function fetchUsers() {
+      fetch("http://localhost:3000/get-users")
+        .then((response) => response.json())
+        .then((data) => {
+          // Display user data in the userList div as a table
+          userList.innerHTML = "<h2>User List</h2>";
+          const table = document.createElement("table");
+          table.innerHTML = `
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>QR Code</th>
+          </tr>
+        `;
+          data.forEach((user) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td><img src="${user.qrcode}" alt="QR Code" width="100" height="100" /></td>
+          `;
+            table.appendChild(row);
+          });
+          userList.appendChild(table);
+        })
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+          alert("An error occurred while fetching users");
+        });
+    }
+
+    fetchUsers(); // Fetch users on page load
+  </script>
+</html>
