@@ -42,45 +42,11 @@ app.use(express.static("public"));
 const transporter = nodemailer.createTransport({
   service: "gmail", // e.g., Gmail, Yahoo, etc.
   auth: {
-    user: "bajadsunil9@gmail.com",
-    pass: "zlbownopiusdawgp",
+    user: "bajadsunil2008@gmail.com",
+    pass: "segagfdwkezywoxi",
   },
 });
 
-// Route to send bulk emails with QR codes
-// app.post("/send-bulk-email", async (req, res) => {
-//   try {
-//     const query = "SELECT email, qrcode FROM users";
-//     const [rows] = await db.promise().execute(query);
-//     if (rows.length === 0) {
-//       return res.status(400).json({ error: "No users found" });
-//     }
-
-//     const recipients = rows.map((row) => row.email);
-//     const qrCodes = rows.map((row) => row.qrcode);
-
-//     const emailSubject = "Your QR Code";
-//     const emailMessage = "Please find your QR code attached below.";
-//     console.log(qrCodes);
-
-//     const mailOptions = {
-//       from: "bajadsunil9@gmail.com",
-//       to: recipients.join(", "),
-//       subject: emailSubject,
-//       text: emailMessage,
-//       attachments: qrCodes.map((qrcode) => ({
-//         filename: `${qrcode}`,
-//         path: `${qrcode}`,
-//       })),
-//     };
-
-//     await transporter.sendMail(mailOptions);
-//     return res.status(200).json({ message: "Bulk email sent successfully" });
-//   } catch (error) {
-//     console.error("Error sending bulk emails:", error);
-//     return res.status(500).json({ error: "Error sending bulk emails" });
-//   }
-// });
 app.post("/send-bulk-email", async (req, res) => {
   try {
     const query = "SELECT email, qrcode FROM users";
@@ -94,15 +60,18 @@ app.post("/send-bulk-email", async (req, res) => {
       const emailSubject = "Your QR Code";
       const emailMessage = "Please find your QR code attached below.";
 
+      const htmlContent = `<h1>Hello ${email}</h1><p>${emailMessage}</p><img src="cid:qrcode" alt="QR Code">`;
       const mailOptions = {
-        from: "bajadsunil9@gmail.com",
+        from: "bajadsunil2008@gmail.com",
         to: email,
         subject: emailSubject,
-        text: emailMessage,
+        html: htmlContent,
+        // text: emailMessage,
         attachments: [
           {
             filename: `${qrcode}`,
             path: `${qrcode}`,
+            cid: "qrcode",
           },
         ],
       };
@@ -181,41 +150,6 @@ app.post("/upload-csv", upload.single("csvFile"), (req, res) => {
     });
 });
 
-// Route to handle CSV upload
-// app.post("/upload-csv", upload.single("csvFile"), (req, res) => {
-//   const file = req.file;
-//   if (!file) {
-//     return res.status(400).json({ error: "No CSV file uploaded" });
-//   }
-
-//   const results = [];
-
-//   // Read and process the CSV file
-//   fs.createReadStream(file.path)
-//     .pipe(csvParser())
-//     .on("data", async (row) => {
-//       // Assuming the CSV file has columns 'name' and 'email'
-//       const qrcode = Math.random().toString(36).substr(2, 10); // Generate a random QR code using name
-//       results.push({ ...row, qrcode });
-
-//       // Insert record into the database
-//       const insertQuery =
-//         "INSERT INTO users (name, email, qrcode) VALUES (?, ?, ?)";
-//       const insertValues = [row.name, row.email, qrcode];
-//       try {
-//         await db.promise().execute(insertQuery, insertValues);
-//       } catch (err) {
-//         console.error("Error inserting record:", err);
-//       }
-//     })
-//     .on("end", () => {
-//       // Clean up the uploaded file
-//       fs.unlinkSync(file.path);
-
-//       res.json({ message: "CSV file processed successfully" });
-//     });
-// });
-
 // Route to send bulk emails with QR codes
 // app.post("/send-bulk-email", async (req, res) => {
 //   try {
@@ -232,7 +166,7 @@ app.post("/upload-csv", upload.single("csvFile"), (req, res) => {
 //     const emailMessage = "Please find your QR code attached below.";
 
 //     const mailOptions = {
-//       from: process.env.EMAIL_USERNAME,
+//       from: "aneeshb35@gmail.com",
 //       to: recipients.join(", "),
 //       subject: emailSubject,
 //       text: emailMessage,
@@ -249,40 +183,6 @@ app.post("/upload-csv", upload.single("csvFile"), (req, res) => {
 //     return res.status(500).json({ error: "Error sending bulk emails" });
 //   }
 // });
-
-// Route to send bulk emails with QR codes
-app.post("/send-bulk-email", async (req, res) => {
-  try {
-    const query = "SELECT email, qrcode FROM users";
-    const [rows] = await db.promise().execute(query);
-    if (rows.length === 0) {
-      return res.status(400).json({ error: "No users found" });
-    }
-
-    const recipients = rows.map((row) => row.email);
-    const qrCodes = rows.map((row) => row.qrcode);
-
-    const emailSubject = "Your QR Code";
-    const emailMessage = "Please find your QR code attached below.";
-
-    const mailOptions = {
-      from: "aneeshb35@gmail.com",
-      to: recipients.join(", "),
-      subject: emailSubject,
-      text: emailMessage,
-      attachments: qrCodes.map((qrcode) => ({
-        filename: `${qrcode}.png`,
-        path: `./qrcodes/${qrcode}.png`,
-      })),
-    };
-
-    await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: "Bulk email sent successfully" });
-  } catch (error) {
-    console.error("Error sending bulk emails:", error);
-    return res.status(500).json({ error: "Error sending bulk emails" });
-  }
-});
 // Start the server
 const PORT = 3000;
 app.listen(PORT, () => {
